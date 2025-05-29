@@ -1,0 +1,28 @@
+# Compiled simulation files
+*.out
+*.vvp
+cache_controller_sim
+
+# Waveform files (optional - comment out if you want to include them)
+*.vcd
+*.ghw
+*.fst
+
+# Temporary files
+*.tmp
+*.log
+*~
+.DS_Store
+
+# Build directories
+build/
+output/
+
+# Editor files
+*.swp
+*.swo
+.vscode/
+.idea/
+
+# OS generated files
+Thumbs.db
