@@ -11,7 +11,6 @@ module test_cases;
     parameter NUM_SETS = 128;
     parameter ASSOC = 4;
 
-    // Inputs
     reg clk;
     reg reset;
     reg [ADDR_WIDTH-1:0] address;
@@ -19,12 +18,10 @@ module test_cases;
     reg write_enable;
     reg [DATA_WIDTH-1:0] write_data;
 
-    // Outputs
     wire [DATA_WIDTH-1:0] read_data;
     wire cache_hit;
     wire cache_ready;
 
-    // Memory interface
     wire [31:0] mem_address;
     wire [511:0] mem_write_data;
     reg [511:0] mem_read_data;
@@ -32,7 +29,6 @@ module test_cases;
     wire mem_write_enable;
     reg mem_ready;
 
-    // Instantiate the cache controller
     cache_controller uut (
         .clk(clk),
         .reset(reset),
@@ -51,15 +47,12 @@ module test_cases;
         .mem_ready(mem_ready)
     );
 
-    // Clock generation
     initial begin
         clk = 0;
         forever #5 clk = ~clk;
     end
 
-    // Test cases
     initial begin
-        // Initialize signals
         reset = 1;
         read_enable = 0;
         write_enable = 0;
@@ -68,12 +61,10 @@ module test_cases;
         mem_read_data = 0;
         mem_ready = 1;
 
-        // Release reset
         #20 reset = 0;
 
         $display("=== Cache Controller Test Cases ===");
 
-        // Test Case 1: Read from empty cache (should be a miss)
         $display("Test Case 1: Read Miss");
         address = 32'h00000000;
         read_enable = 1;
@@ -83,7 +74,6 @@ module test_cases;
         #20;
         if (!cache_hit) $display("Test Case 1 Passed: Read Miss");
 
-        // Test Case 2: Write to cache
         $display("Test Case 2: Write Hit");
         address = 32'h00000000;
         write_data = 32'hDEADBEEF;
@@ -93,7 +83,6 @@ module test_cases;
         #10;
         if (cache_hit) $display("Test Case 2 Passed: Write Hit");
 
-        // Test Case 3: Read back the written data
         $display("Test Case 3: Read Hit");
         read_enable = 1;
         #10;
@@ -107,7 +96,6 @@ module test_cases;
         $finish;
     end
 
-    // Monitor
     initial begin
         $monitor("Time=%0t, State=%0d, Addr=%h, R=%b, W=%b, Hit=%b, Ready=%b", 
                  $time, uut.current_state, address, read_enable, write_enable, 

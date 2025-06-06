@@ -1,0 +1,120 @@
+@startuml system_architecture_uml
+!define RECTANGLE class
+
+title Cache Controller System Architecture - UML Diagram
+
+RECTANGLE cache_controller {
+    == Main Controller ==
+    + FSM Logic
+    + Memory Interface
+    + Control Signals
+}
+
+RECTANGLE cache_memory {
+    == Cache Integration ==
+    + Hit Detection
+    + Data Selection
+    + Write Control
+}
+
+RECTANGLE tag_array {
+    == Tag Storage ==
+    + 4-way Tags
+    + Valid Bits
+    + Tag Comparison
+}
+
+RECTANGLE data_array {
+    == Data Storage ==
+    + 4-way Data Blocks
+    + Word/Block Write
+    + Data Output
+}
+
+RECTANGLE lru_controller {
+    == Replacement Policy ==
+    + LRU Tracking
+    + Way Selection
+    + Counter Management
+}
+
+RECTANGLE address_decoder {
+    == Address Parsing ==
+    + Tag Extraction
+    + Index Extraction
+    + Offset Extraction
+}
+
+' Relationships
+cache_controller ||--|| cache_memory : "controls"
+cache_controller ||--|| lru_controller : "uses LRU"
+cache_memory ||--|| tag_array : "contains"
+cache_memory ||--|| data_array : "contains"
+cache_controller ||--|| address_decoder : "uses for\naddress parsing"
+
+' External interfaces
+RECTANGLE "CPU Interface" as cpu {
+    + address[31:0]
+    + read_data[31:0]
+    + write_data[31:0]
+    + read_enable
+    + write_enable
+    + cache_hit
+    + cache_ready
+}
+
+RECTANGLE "Memory Interface" as memory {
+    + mem_address[31:0]
+    + mem_read_data[511:0]
+    + mem_write_data[511:0]
+    + mem_read_enable
+    + mem_write_enable
+    + mem_ready
+}
+
+cpu ||--|| cache_controller : "CPU requests"
+cache_controller ||--|| memory : "Memory access"
+
+note top of cache_controller
+    **Main FSM States:**
+    • IDLE: Ready for requests
+    • READ_HIT: Serving read from cache
+    • READ_MISS: Fetching from memory
+    • WRITE_HIT: Writing to cache
+    • WRITE_MISS: Fetching then writing
+    • EVICT: Evicting dirty data
+end note
+
+note right of tag_array
+    **Tag Array Specs:**
+    • 4 ways × 128 sets
+    • 19-bit tags + valid bits
+    • Dual-port: read all ways,
+      write selected way
+end note
+
+note right of data_array
+    **Data Array Specs:**
+    • 4 ways × 128 sets × 64 bytes
+    • Total capacity: 32KB
+    • Support for word and block writes
+end note
+
+note left of lru_controller
+    **LRU Algorithm:**
+    • 2-bit counters per way
+    • 0 = Most Recently Used
+    • 3 = Least Recently Used
+    • Updated on cache hits
+end note
+
+note bottom
+    **System Overview:**
+    4-way set-associative cache with 32KB capacity
+    • Block size: 64 bytes
+    • Number of sets: 128
+    • Replacement: LRU policy
+    • Write policy: Write-through (planned)
+end note
+
+@enduml

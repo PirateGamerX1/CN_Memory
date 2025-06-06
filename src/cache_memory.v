@@ -22,13 +22,11 @@ module cache_memory (
     wire [TAG_BITS-1:0] tag = address[31:13];
     wire [INDEX_BITS-1:0] index = address[12:6];
     wire [OFFSET_BITS-1:0] offset = address[5:0];
-    wire [3:0] word_offset = offset[5:2]; // Fixed: should be 4 bits for 16 words per block
+    wire [3:0] word_offset = offset[5:2];
 
-    // Tag array outputs
     wire [TAG_BITS-1:0] tag_out_0, tag_out_1, tag_out_2, tag_out_3;
     wire [3:0] valid_bits;
 
-    // Determine which way to write to
     wire [1:0] write_way_select;
     assign write_way_select = (lru_way == 4'b0001) ? 2'b00 :
                              (lru_way == 4'b0010) ? 2'b01 :
@@ -48,7 +46,6 @@ module cache_memory (
         .valid_bits(valid_bits)
     );
 
-    // Data array outputs
     wire [511:0] data_out_0, data_out_1, data_out_2, data_out_3;
 
     data_array data_array_inst (
@@ -68,7 +65,6 @@ module cache_memory (
         .data_out_3(data_out_3)
     );
 
-    // Hit detection
     wire [3:0] way_hit;
     assign way_hit[0] = valid_bits[0] && (tag_out_0 == tag);
     assign way_hit[1] = valid_bits[1] && (tag_out_1 == tag);
@@ -78,7 +74,6 @@ module cache_memory (
     assign cache_hit = |way_hit;
     assign hit_way = way_hit;
 
-    // FIXED: Data output mux with immediate updates
     always @(*) begin
         data_out = 32'b0;
         cache_data_out = 512'b0;
@@ -96,7 +91,6 @@ module cache_memory (
             data_out = data_out_3[word_offset*32 +: 32];
             cache_data_out = data_out_3;
         end else begin
-            // FIXED: For misses, provide data from the LRU way immediately after write
             case (lru_way)
                 4'b0001: begin
                     data_out = data_out_0[word_offset*32 +: 32];
@@ -121,7 +115,6 @@ module cache_memory (
             endcase
         end
         
-        // Debug output
         if (|way_hit || |lru_way) begin
             $display("CACHE_MEMORY: way_hit=%b, lru_way=%b, word_offset=%d, data_out=%h", 
                      way_hit, lru_way, word_offset, data_out);
